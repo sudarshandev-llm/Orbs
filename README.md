@@ -87,7 +87,7 @@ orb.addEventListener("orbstatechange", (e) => {
 
 Three ways, pick one:
 
-**1. The component** — copy `orb.js` (47 kB, no imports, no network requests) and use the tag:
+**1. The component** - copy `orb.js` (52 kB, no imports, no network requests) and use the tag:
 
 ```html
 <script src="orb.js"></script>
