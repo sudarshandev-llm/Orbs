@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Sonar Ripple — a realistic, zero-dependency CSS orb for AI assistants. Part of Orbs.">
+<title>Sonar Ripple · Orbs</title>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(120% 110% at 50% -10%, #181533 0%, #0c0a19 45%, #06050d 100%);
+    color: #cfcbe6;
+    font: 14px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .demo { display: grid; justify-items: center; gap: 28px; padding: 40px 24px; }
+  .orb-stage { margin-bottom: -8px; }
+  .meta { text-align: center; max-width: 34ch; }
+  .meta h1 { margin: 0 0 6px; font-size: 15px; font-weight: 600; letter-spacing: .01em; }
+  .meta p { margin: 0; font-size: 12.5px; color: #8d88ab; }
+  .states { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .states button {
+    appearance: none;
+    border: 1px solid #ffffff1f;
+    background: #ffffff0a;
+    color: #b9b4d6;
+    font: inherit;
+    font-size: 12px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .18s ease, color .18s ease, border-color .18s ease;
+  }
+  .states button:hover { background: #ffffff14; color: #e7e3ff; }
+  .states button[aria-pressed="true"] {
+    background: hsl(186 90% 60% / .18);
+    border-color: hsl(186 90% 70% / .55);
+    color: #fff;
+  }
+  .states button:focus-visible { outline: 2px solid hsl(186 90% 70% / .8); outline-offset: 2px; }
+  .back {
+    position: fixed; top: 18px; left: 18px;
+    color: #8d88ab; text-decoration: none; font-size: 12px;
+    padding: 6px 12px; border-radius: 999px; border: 1px solid #ffffff14;
+  }
+  .back:hover { color: #fff; background: #ffffff0d; }
+  .hint { font-size: 11.5px; color: #5f5a7a; margin: -14px 0 0; text-align: center; }
+  @media (prefers-reduced-motion: reduce) {
+    .states button { transition: none; }
+  }
+
+/* ---- orb.css (inlined so this file works on its own) ------------------- */
+/* ==========================================================================
+   ORBS — realistic assistant orbs
+   CSS only. No dependencies. No build step required to use it.
+
+   Usage:
+     <div class="orb-stage" data-state="idle" style="--orb-h:265;--orb-size:168px">
+       <div class="orb orb--sphere"> ... </div>
+     </div>
+
+   Theme:
+     --orb-h      hue, 0-360            (265 = violet)
+     --orb-size   diameter              (168px)
+     --orb-speed  global speed, 0.2-3   (1)
+
+   State (data-state on .orb-stage):
+     idle | listening | thinking | speaking
+
+   Everything below is tuned around one physical idea: a single key light
+   sitting above and to the left (30% / 24%), a cool bounce light coming
+   back off the "floor" at the lower right, and a thin fresnel rim that
+   only appears at grazing angles. That combination is what makes the
+   orbs read as glass instead of as flat gradient circles.
+   ========================================================================== */
+
+.orb-stage {
+  /* geometry */
+  --s: var(--orb-size);
+  --orb-size: 168px;
+
+  /* motion (overridden per state, below) */
+  --orb-speed: 1;
+  --beat: calc(5.4s / var(--orb-speed));
+  --spin: calc(20s / var(--orb-speed));
+  --lift: 4%;
+  --glow: 0.45;
+
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(var(--s) * 1.9);
+  height: calc(var(--s) * 1.9);
+  isolation: isolate;
+}
+
+/* --- state machine -------------------------------------------------------
+   One shared clock per state. Every animation below derives its duration
+   from --beat or --spin, so a state change retimes the whole orb instead
+   of hard-cutting it. */
+
+.orb-stage[data-state="idle"] {
+  --beat: calc(6.4s / var(--orb-speed));
+  --spin: calc(24s / var(--orb-speed));
+  --lift: 3.5%;
+  --glow: 0.42;
+}
+
+.orb-stage[data-state="listening"] {
+  --beat: calc(2s / var(--orb-speed));
+  --spin: calc(17s / var(--orb-speed));
+  --lift: 5.5%;
+  --glow: 0.68;
+}
+
+.orb-stage[data-state="thinking"] {
+  --beat: calc(1.35s / var(--orb-speed));
+  --spin: calc(5.5s / var(--orb-speed));
+  --lift: 2.5%;
+  --glow: 0.6;
+}
+
+.orb-stage[data-state="speaking"] {
+  --beat: calc(0.95s / var(--orb-speed));
+  --spin: calc(13s / var(--orb-speed));
+  --lift: 4.5%;
+  --glow: 0.8;
+}
+
+/* --- shell --------------------------------------------------------------- */
+
+.orb {
+  /* generated film grain, reused by every variant */
+  --orb-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  position: relative;
+  width: var(--s);
+  height: var(--s);
+  color-scheme: dark;
+}
+
+/* Every layer is out of flow. Missing this is the difference between a lit
+   orb and a stack of gradient boxes, so the list is intentionally explicit. */
+.orb__aura,
+.orb__body,
+.orb__glass,
+.orb__shadow,
+.orb__swirl,
+.orb__core,
+.orb__horizon,
+.orb__sheen,
+.orb__spec,
+.orb__rim,
+.orb__grain,
+.orb__fog,
+.orb__rig,
+.orb__ring,
+.orb__core-orb,
+.orb__plasma,
+.orb__halo,
+.orb__haze,
+.orb__glow-core,
+.orb__mer,
+.orb__lat,
+.orb__torus,
+.orb__ripples,
+.orb__dust,
+.orb__veil,
+.orb__limb {
+  position: absolute;
+}
+
+/* ambient bloom, painted behind the glass */
+.orb__aura {
+  left: 50%;
+  top: 50%;
+  width: 190%;
+  height: 190%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    hsl(var(--orb-h) 100% 62% / 0.5) 0%,
+    hsl(var(--orb-h) 100% 58% / 0.26) 32%,
+    hsl(calc(var(--orb-h) + 40) 100% 55% / 0.1) 52%,
+    transparent 70%
+  );
+  filter: blur(calc(var(--s) * 0.12));
+  animation: orb-aura var(--beat) ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* the float + the coloured light spill */
+.orb__body {
+  inset: 0;
+  border-radius: 50%;
+  box-shadow:
+    0 0 calc(var(--s) * 0.16) hsl(var(--orb-h) 100% 68% / calc(var(--glow) * 0.75)),
+    0 0 calc(var(--s) * 0.5) hsl(var(--orb-h) 100% 58% / calc(var(--glow) * 0.45)),
+    0 0 calc(var(--s) * 1.05) hsl(calc(var(--orb-h) + 35) 100% 52% / calc(var(--glow) * 0.22));
+  animation: orb-float calc(7.5s / var(--orb-speed)) ease-in-out infinite;
+}
+
+/* the actual glass surface */
+.orb__glass {
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background:
+    /* bounce light off the floor */
+    radial-gradient(circle at 72% 84%, hsl(calc(var(--orb-h) + 55) 100% 66% / 0.45) 0%, transparent 38%),
+    /* key light */
+    radial-gradient(
+      circle at 33% 24%,
+      hsl(calc(var(--orb-h) + 6) 100% 93%) 0%,
+      hsl(var(--orb-h) 98% 78%) 9%,
+      hsl(var(--orb-h) 95% 60%) 27%,
+      hsl(calc(var(--orb-h) + 14) 92% 42%) 48%,
+      hsl(calc(var(--orb-h) + 28) 82% 24%) 70%,
+      hsl(calc(var(--orb-h) + 42) 74% 12%) 88%,
+      hsl(calc(var(--orb-h) + 50) 68% 8%) 100%
+    );
+  box-shadow:
+    /* terminator: hard shadow falling away from the light */
+    inset calc(var(--s) * -0.035) calc(var(--s) * -0.05) calc(var(--s) * 0.12)
+      hsl(calc(var(--orb-h) + 45) 85% 4% / 0.85),
+    /* bounce coming back */
+    inset calc(var(--s) * 0.02) calc(var(--s) * 0.03) calc(var(--s) * 0.09)
+      hsl(calc(var(--orb-h) + 40) 100% 76% / 0.35),
+    /* one pixel of fresnel on the silhouette */
+    0 0 0 1px hsl(calc(var(--orb-h) + 60) 100% 88% / 0.12);
+}
+
+/* inner energy, also acts as the caustic where light focuses through glass */
+.orb__core {
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, hsl(calc(var(--orb-h) + 30) 100% 58% / 0.5) 0%, transparent 55%),
+    radial-gradient(ellipse 46% 30% at 63% 74%, hsl(calc(var(--orb-h) + 78) 100% 88% / 0.6) 0%, transparent 70%);
+  filter: blur(calc(var(--s) * 0.02));
+  mix-blend-mode: screen;
+  animation: orb-breathe var(--beat) ease-in-out infinite;
+}
+
+/* slow internal current — nearly invisible at idle, obvious when thinking */
+.orb__swirl {
+  inset: -20%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    hsl(calc(var(--orb-h) + 55) 100% 78% / 0.5) 45deg,
+    transparent 110deg,
+    hsl(calc(var(--orb-h) - 40) 100% 72% / 0.38) 190deg,
+    transparent 265deg,
+    hsl(calc(var(--orb-h) + 20) 100% 70% / 0.32) 320deg,
+    transparent 360deg
+  );
+  filter: blur(calc(var(--s) * 0.1));
+  mix-blend-mode: screen;
+  opacity: 0.3;
+  animation: orb-spin var(--spin) linear infinite;
+}
+
+/* the horizon line reflected inside the glass. this one detail does more
+   for "realism" than any amount of extra gradient work. */
+.orb__horizon {
+  left: -12%;
+  right: -12%;
+  bottom: 11%;
+  height: 30%;
+  background: linear-gradient(
+    to top,
+    transparent 0%,
+    hsl(calc(var(--orb-h) + 70) 100% 90% / 0.3) 36%,
+    hsl(calc(var(--orb-h) + 90) 100% 96% / 0.5) 56%,
+    transparent 100%
+  );
+  filter: blur(calc(var(--s) * 0.045));
+  mix-blend-mode: screen;
+  transform: rotate(-7deg);
+  opacity: 0.7;
+}
+
+/* broad reflection of the studio above */
+.orb__sheen {
+  left: 8%;
+  right: 10%;
+  top: 6%;
+  height: 44%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    hsl(calc(var(--orb-h) + 65) 100% 98% / 0.4) 0%,
+    hsl(calc(var(--orb-h) + 65) 100% 98% / 0.12) 46%,
+    transparent 78%
+  );
+  filter: blur(calc(var(--s) * 0.05));
+  transform: rotate(-13deg);
+}
+
+/* the sharp specular: a hot core plus a tighter secondary dot */
+.orb__spec {
+  left: 17%;
+  top: 10%;
+  width: 34%;
+  height: 24%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    #fff 0%,
+    hsl(calc(var(--orb-h) + 60) 100% 98% / 0.92) 28%,
+    transparent 74%
+  );
+  filter: blur(calc(var(--s) * 0.013));
+  transform: rotate(-26deg);
+}
+
+.orb__spec::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  top: 30%;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fff 0%, #fff0 70%);
+  filter: blur(1px);
+}
+
+/* fresnel rim — bright only at the silhouette */
+.orb__rim {
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    transparent 60%,
+    hsl(calc(var(--orb-h) + 50) 100% 80% / 0.06) 74%,
+    hsl(calc(var(--orb-h) + 58) 100% 88% / 0.5) 93%,
+    hsl(calc(var(--orb-h) + 72) 100% 97% / 0.85) 98%,
+    hsl(calc(var(--orb-h) + 72) 100% 97% / 0.18) 100%
+  );
+  mix-blend-mode: screen;
+  animation: orb-rim var(--beat) ease-in-out infinite;
+}
+
+/* fine grain. animated, because static noise reads as a texture while
+   moving noise reads as film / sensor. */
+.orb__grain {
+  inset: 0;
+  border-radius: 50%;
+  background-image: var(--orb-noise);
+  background-size: calc(var(--s) * 0.9) calc(var(--s) * 0.9);
+  opacity: 0.2;
+  mix-blend-mode: overlay;
+  animation: orb-grain 0.72s linear infinite;
+  pointer-events: none;
+}
+
+/* contact shadow, always on the ground — never floats with the orb */
+.orb__shadow {
+  left: 50%;
+  bottom: calc(var(--s) * -0.17);
+  width: calc(var(--s) * 0.72);
+  height: calc(var(--s) * 0.1);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    closest-side,
+    hsl(calc(var(--orb-h) + 30) 70% 3% / 0.9) 0%,
+    hsl(calc(var(--orb-h) + 30) 70% 3% / 0.42) 46%,
+    transparent 78%
+  );
+  filter: blur(calc(var(--s) * 0.03));
+  opacity: 0.85;
+  animation: orb-shadow calc(7.5s / var(--orb-speed)) ease-in-out infinite;
+}
+
+/* --- motion -------------------------------------------------------------- */
+
+@keyframes orb-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(calc(var(--lift) * -1)); }
+}
+
+@keyframes orb-aura {
+  0%, 100% { opacity: calc(var(--glow) * 0.7); transform: translate(-50%, -50%) scale(0.95); }
+  50% { opacity: calc(var(--glow) * 1.3); transform: translate(-50%, -50%) scale(1.07); }
+}
+@keyframes orb-shadow {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.85; }
+  50% { transform: translateX(-50%) scale(0.82); opacity: 0.5; }
+}
+
+@keyframes orb-breathe {
+  0%, 100% { opacity: 0.7; transform: scale(0.965); }
+  50% { opacity: 1; transform: scale(1.035); }
+}
+
+@keyframes orb-rim {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+@keyframes orb-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* deliberately uneven: speech is not a sine wave */
+@keyframes orb-speak {
+  0%, 100% { transform: scale(1); }
+  11% { transform: scale(1.055); }
+  21% { transform: scale(1.005); }
+  33% { transform: scale(1.045); }
+  47% { transform: scale(0.99); }
+  61% { transform: scale(1.04); }
+  75% { transform: scale(1); }
+  87% { transform: scale(1.028); }
+}
+
+/* grain position is stepped, not interpolated — interpolation smears it */
+@keyframes orb-grain {
+  0% { background-position: 0 0; }
+  20% { background-position: -9% 6%; }
+  40% { background-position: 12% -8%; }
+  60% { background-position: -6% -12%; }
+  80% { background-position: 8% 11%; }
+  100% { background-position: 0 0; }
+}
+
+/* --- state reactions ----------------------------------------------------- */
+
+.orb-stage[data-state="thinking"] .orb__swirl { opacity: 0.9; }
+.orb-stage[data-state="thinking"] .orb__core { opacity: 1; }
+.orb-stage[data-state="listening"] .orb__rim { opacity: 1; }
+.orb-stage[data-state="listening"] .orb__swirl { opacity: 0.45; }
+
+.orb-stage[data-state="speaking"] .orb__glass,
+.orb-stage[data-state="speaking"] .orb__core-orb,
+.orb-stage[data-state="speaking"] .orb__plasma {
+  animation: orb-speak calc(1.7s / var(--orb-speed)) ease-in-out infinite;
+}
+
+.orb-stage[data-state="speaking"] .orb__aura { animation-duration: calc(1.2s / var(--orb-speed)); }
+
+/* --- accessibility ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .orb-stage *,
+  .orb-stage *::before,
+  .orb-stage *::after {
+    animation: none !important;
+  }
+  /* The keyframes normally carry these values. Without the animation they
+     fall back to 1, which would over-brighten the bloom and the rim. */
+  .orb__aura { opacity: calc(var(--glow) * 0.9); }
+  .orb__rim { opacity: 0.85; }
+  .orb__core { opacity: 0.85; }
+  .orb__swirl { opacity: 0.3; }
+  .orb__grain { opacity: 0.14; }
+}
+
+/* ==========================================================================
+   VARIANT: sphere — polished glass marble
+   ========================================================================== */
+
+.orb--sphere .orb__glass {
+  /* a whisper of dispersion where the rim catches the light */
+  box-shadow:
+    inset calc(var(--s) * -0.035) calc(var(--s) * -0.05) calc(var(--s) * 0.12)
+      hsl(calc(var(--orb-h) + 45) 85% 4% / 0.85),
+    inset calc(var(--s) * 0.02) calc(var(--s) * 0.03) calc(var(--s) * 0.09)
+      hsl(calc(var(--orb-h) + 40) 100% 76% / 0.35),
+    0 0 0 1px hsl(calc(var(--orb-h) + 60) 100% 88% / 0.12);
+}
+
+.orb--sphere .orb__rim {
+  /* split the rim into warm + cool halves, like a real glass edge */
+  background:
+    radial-gradient(
+      closest-side,
+      transparent 62%,
+      hsl(calc(var(--orb-h) + 20) 100% 84% / 0.34) 88%,
+      hsl(calc(var(--orb-h) + 20) 100% 97% / 0.6) 97%,
+      transparent 100%
+    ),
+    radial-gradient(
+      closest-side,
+      transparent 64%,
+      hsl(calc(var(--orb-h) + 120) 100% 82% / 0.22) 92%,
+      transparent 100%
+    );
+}
+
+/* ==========================================================================
+   VARIANT: grain — matte, frosted, sandblasted
+   ========================================================================== */
+
+.orb--grain .orb__glass {
+  background:
+    radial-gradient(circle at 72% 82%, hsl(calc(var(--orb-h) + 55) 100% 66% / 0.32) 0%, transparent 40%),
+    radial-gradient(
+      circle at 34% 26%,
+      hsl(calc(var(--orb-h) - 30) 95% 78%) 0%,
+      hsl(var(--orb-h) 92% 64%) 26%,
+      hsl(calc(var(--orb-h) + 20) 90% 46%) 54%,
+      hsl(calc(var(--orb-h) + 45) 84% 26%) 78%,
+      hsl(calc(var(--orb-h) + 58) 72% 13%) 100%
+    );
+  filter: saturate(1.06) contrast(1.04);
+}
+
+/* frosted surfaces scatter light: the specular gets wide and soft, but the
+   hot spot is still bright at its centre */
+.orb--grain .orb__spec {
+  opacity: 0.7;
+  filter: blur(calc(var(--s) * 0.022));
+  height: 30%;
+  width: 38%;
+}
+
+.orb--grain .orb__sheen { opacity: 0.7; }
+
+.orb--grain .orb__grain {
+  opacity: 0.34;
+  mix-blend-mode: soft-light;
+  background-size: calc(var(--s) * 0.7) calc(var(--s) * 0.7);
+}
+
+/* a second, coarser grain layer at a different speed. two layers is what
+   separates "noise texture" from "grain". */
+.orb--grain .orb__grain--b {
+  opacity: 0.26;
+  mix-blend-mode: overlay;
+  background-size: calc(var(--s) * 1.45) calc(var(--s) * 1.45);
+  animation-duration: 1.15s;
+  animation-direction: reverse;
+}
+
+.orb--grain .orb__fog {
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 62%, hsl(calc(var(--orb-h) + 75) 100% 84% / 0.34), transparent 58%);
+  filter: blur(calc(var(--s) * 0.09));
+  mix-blend-mode: screen;
+  animation: orb-breathe var(--beat) ease-in-out infinite;
+}
+
+/* ==========================================================================
+   VARIANT: glow — a cloud of lit dust, no hard surface
+   ========================================================================== */
+
+.orb--glow .orb__body {
+  box-shadow:
+    0 0 calc(var(--s) * 0.2) hsl(var(--orb-h) 100% 70% / calc(var(--glow) * 0.55)),
+    0 0 calc(var(--s) * 0.62) hsl(var(--orb-h) 100% 60% / calc(var(--glow) * 0.4)),
+    0 0 calc(var(--s) * 1.3) hsl(calc(var(--orb-h) + 40) 100% 55% / calc(var(--glow) * 0.24));
+}
+
+.orb--glow .orb__halo {
+  inset: -16%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 40%,
+    hsl(calc(var(--orb-h) + 40) 100% 76% / 0.3) 55%,
+    hsl(var(--orb-h) 100% 66% / 0.16) 68%,
+    transparent 82%
+  );
+  filter: blur(calc(var(--s) * 0.06));
+  animation: orb-aura var(--beat) ease-in-out infinite reverse;
+}
+
+.orb--glow .orb__plasma {
+  inset: 4%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 30%, hsl(calc(var(--orb-h) + 50) 100% 86% / 0.95) 0%, transparent 40%),
+    radial-gradient(circle at 68% 64%, hsl(calc(var(--orb-h) - 45) 100% 68% / 0.85) 0%, transparent 44%),
+    radial-gradient(circle at 50% 52%, hsl(var(--orb-h) 100% 62% / 0.9) 0%, transparent 64%);
+  filter: blur(calc(var(--s) * 0.07));
+  animation: orb-churn calc(16s / var(--orb-speed)) ease-in-out infinite;
+  will-change: transform;
+}
+
+.orb--glow .orb__plasma--b {
+  inset: 12%;
+  background:
+    radial-gradient(circle at 62% 36%, hsl(calc(var(--orb-h) + 90) 100% 88% / 0.7) 0%, transparent 42%),
+    radial-gradient(circle at 40% 70%, hsl(calc(var(--orb-h) + 15) 100% 72% / 0.75) 0%, transparent 46%);
+  filter: blur(calc(var(--s) * 0.05));
+  animation-duration: calc(11s / var(--orb-speed));
+  animation-direction: reverse;
+  opacity: 0.85;
+}
+
+.orb--glow .orb__grain {
+  opacity: 0.45;
+  mix-blend-mode: soft-light;
+  -webkit-mask-image: radial-gradient(circle, #000 26%, rgb(0 0 0 / 0.55) 52%, transparent 74%);
+  mask-image: radial-gradient(circle, #000 26%, rgb(0 0 0 / 0.55) 52%, transparent 74%);
+}
+
+.orb--glow .orb__rim {
+  background: radial-gradient(
+    closest-side,
+    transparent 56%,
+    hsl(calc(var(--orb-h) + 70) 100% 92% / 0.18) 78%,
+    hsl(calc(var(--orb-h) + 80) 100% 96% / 0.32) 92%,
+    transparent 100%
+  );
+}
+
+.orb--glow .orb__shadow {
+  opacity: 0.4;
+  width: calc(var(--s) * 0.58);
+}
+
+@keyframes orb-churn {
+  0%, 100% { transform: rotate(0deg) scale(0.97); }
+  33% { transform: rotate(120deg) scale(1.05); }
+  66% { transform: rotate(240deg) scale(0.99); }
+}
+
+/* ==========================================================================
+   VARIANT: gyro — armillary rings orbiting a glass core
+   ========================================================================== */
+
+.orb--gyro .orb__body,
+.orb--globe .orb__body { perspective: calc(var(--s) * 6); }
+
+.orb--gyro .orb__rig,
+.orb--globe .orb__rig {
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.orb--gyro .orb__rig--back .orb__ring {
+  opacity: 0.42;
+  filter: blur(calc(var(--s) * 0.006)) brightness(0.75);
+}
+
+.orb--gyro .orb__ring {
+  inset: 0;
+  border-radius: 50%;
+  /* Base pose matters: with reduced motion the animations are removed, and
+     without this the rings would collapse into flat concentric circles. */
+  transform: rotateX(var(--rx, 72deg)) rotateY(0deg) rotateZ(0deg);
+  animation: gyro-orbit calc(var(--spin) * var(--mul, 1)) linear infinite;
+  animation-direction: var(--dir, normal);
+  will-change: transform;
+}
+
+/* Glow lives on the unmasked parent. If it sat on the masked band it would
+   be clipped away by the mask, which is the classic CSS-ring mistake. */
+.orb--gyro .orb__ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    transparent 56%,
+    hsl(var(--orb-h) 100% 64% / 0.4) 72%,
+    hsl(var(--orb-h) 100% 74% / 0.18) 86%,
+    transparent 97%
+  );
+  filter: blur(calc(var(--s) * 0.03));
+}
+
+/* The band itself: a conic gradient reads as brushed metal lit from one
+   side, which is what makes a flat annulus look like a torus. A thin
+   radial highlight on the outer edge fakes the tube's cross-section. */
+.orb--gyro .orb__ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image:
+    radial-gradient(
+      closest-side,
+      transparent 62%,
+      transparent 91%,
+      hsl(calc(var(--orb-h) + 40) 100% 94% / 0.5) 94%,
+      transparent 99%
+    ),
+    conic-gradient(
+      from 200deg,
+      hsl(var(--orb-h) 100% 96%) 0deg,
+      hsl(var(--orb-h) 96% 66%) 24deg,
+      hsl(calc(var(--orb-h) + 26) 92% 32%) 62deg,
+      hsl(var(--orb-h) 96% 54%) 98deg,
+      hsl(var(--orb-h) 100% 92%) 142deg,
+      hsl(calc(var(--orb-h) + 30) 95% 74%) 178deg,
+      hsl(calc(var(--orb-h) + 45) 86% 24%) 222deg,
+      hsl(var(--orb-h) 98% 62%) 282deg,
+      hsl(var(--orb-h) 100% 94%) 330deg,
+      hsl(var(--orb-h) 100% 96%) 360deg
+    );
+  -webkit-mask: radial-gradient(closest-side, transparent 63%, #000 65%, #000 92%, transparent 99%);
+  mask: radial-gradient(closest-side, transparent 63%, #000 65%, #000 92%, transparent 99%);
+}
+
+@keyframes gyro-orbit {
+  from { transform: rotateX(var(--rx, 72deg)) rotateY(0deg) rotateZ(0deg); }
+  to { transform: rotateX(var(--rx, 72deg)) rotateY(360deg) rotateZ(360deg); }
+}
+
+/* the core is a smaller glass sphere, lit by the same key light */
+.orb--gyro .orb__core-orb {
+  inset: 28%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 72% 84%, hsl(calc(var(--orb-h) + 55) 100% 66% / 0.5) 0%, transparent 40%),
+    radial-gradient(
+      circle at 32% 24%,
+      hsl(calc(var(--orb-h) + 6) 100% 94%) 0%,
+      hsl(var(--orb-h) 98% 78%) 12%,
+      hsl(var(--orb-h) 95% 58%) 34%,
+      hsl(calc(var(--orb-h) + 18) 90% 38%) 58%,
+      hsl(calc(var(--orb-h) + 32) 80% 20%) 80%,
+      hsl(calc(var(--orb-h) + 46) 70% 9%) 100%
+    );
+  box-shadow:
+    inset calc(var(--s) * -0.02) calc(var(--s) * -0.028) calc(var(--s) * 0.07)
+      hsl(calc(var(--orb-h) + 45) 85% 4% / 0.9),
+    inset calc(var(--s) * 0.012) calc(var(--s) * 0.018) calc(var(--s) * 0.05)
+      hsl(calc(var(--orb-h) + 40) 100% 78% / 0.4),
+    0 0 calc(var(--s) * 0.3) hsl(var(--orb-h) 100% 62% / 0.55);
+  animation: orb-breathe calc(var(--beat) * 2) ease-in-out infinite;
+}
+
+.orb--gyro .orb__core-orb .orb__spec { filter: blur(calc(var(--s) * 0.006)); }
+.orb--gyro .orb__core-orb .orb__sheen { filter: blur(calc(var(--s) * 0.02)); opacity: 0.8; }
+
+/* ==========================================================================
+   VARIANT: globe — wireframe sphere with atmosphere
+   ========================================================================== */
+
+.orb--globe .orb__rig {
+  /* static tilt so the frozen (reduced-motion) state still reads as a sphere */
+  transform: rotateX(-14deg) rotateZ(4deg) rotateY(0deg);
+  animation: globe-spin var(--spin) linear infinite;
+  will-change: transform;
+}
+
+@keyframes globe-spin {
+  0% { transform: rotateX(-14deg) rotateZ(4deg) rotateY(0deg); }
+  50% { transform: rotateX(-8deg) rotateZ(-4deg) rotateY(180deg); }
+  100% { transform: rotateX(-14deg) rotateZ(4deg) rotateY(360deg); }
+}
+
+.orb--globe .orb__mer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid hsl(calc(var(--orb-h) + 20) 100% 84% / 0.9);
+  box-shadow:
+    0 0 calc(var(--s) * 0.035) hsl(var(--orb-h) 100% 66% / 0.75),
+    inset 0 0 calc(var(--s) * 0.035) hsl(var(--orb-h) 100% 66% / 0.4);
+  transform: rotateY(var(--r, 0deg));
+}
+
+.orb--globe .orb__mer:nth-child(odd) { opacity: 0.55; }
+.orb--globe .orb__mer:nth-child(4n) { opacity: 0.35; }
+
+.orb--globe .orb__lat {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid hsl(calc(var(--orb-h) + 45) 100% 82% / 0.65);
+  box-shadow: 0 0 calc(var(--s) * 0.025) hsl(calc(var(--orb-h) + 20) 100% 62% / 0.6);
+  transform: rotateX(90deg) translateZ(var(--z, 0)) scale(var(--sc, 1));
+}
+
+/* the dark body of the sphere: lines on the far side fall into it */
+.orb--globe .orb__glow-core {
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 36%, hsl(var(--orb-h) 100% 62% / 0.5), transparent 68%);
+  filter: blur(calc(var(--s) * 0.07));
+  animation: orb-breathe calc(var(--beat) * 1.5) ease-in-out infinite;
+}
+
+.orb--globe .orb__haze {
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    hsl(calc(var(--orb-h) + 30) 45% 5% / 0.72) 0%,
+    hsl(calc(var(--orb-h) + 30) 45% 5% / 0.5) 34%,
+    hsl(calc(var(--orb-h) + 30) 45% 5% / 0.12) 58%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+
+.orb--globe .orb__rim {
+  background: radial-gradient(
+    closest-side,
+    transparent 58%,
+    hsl(calc(var(--orb-h) + 40) 100% 78% / 0.22) 82%,
+    hsl(calc(var(--orb-h) + 55) 100% 90% / 0.7) 96%,
+    hsl(calc(var(--orb-h) + 70) 100% 98% / 0.9) 100%
+  );
+}
+
+.orb--globe .orb__grain { opacity: 0.12; }
+
+.orb--globe .orb__body {
+  box-shadow:
+    0 0 calc(var(--s) * 0.22) hsl(var(--orb-h) 100% 62% / calc(var(--glow) * 0.55)),
+    0 0 calc(var(--s) * 0.7) hsl(calc(var(--orb-h) + 40) 100% 58% / calc(var(--glow) * 0.3));
+}
+
+/* ==========================================================================
+   VARIANT: torus — brushed metal donut tilted under the key light
+   ========================================================================== */
+
+.orb--torus .orb__body {
+  perspective: calc(var(--s) * 6);
+  /* A disc glow would read as a sphere behind the ring, so the torus keeps
+     only a faint ambient wash. The crisp glow is a drop-shadow on the band. */
+  box-shadow: 0 0 calc(var(--s) * 0.55) hsl(var(--orb-h) 100% 58% / calc(var(--glow) * 0.22));
+}
+
+.orb--torus .orb__aura { opacity: 0.55; }
+
+.orb--torus .orb__torus {
+  inset: 4%;
+  border-radius: 50%;
+  /* A circle rotated about X becomes an ellipse. That single move is the
+     whole 3D read; the shading below supplies the tube's cross-section. */
+  transform: rotateX(61deg) rotateZ(-13deg);
+  transform-style: preserve-3d;
+  animation: torus-drift calc(var(--spin) * 2.4) ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 calc(var(--s) * 0.07) hsl(var(--orb-h) 100% 64% / 0.55))
+    drop-shadow(0 0 calc(var(--s) * 0.2) hsl(var(--orb-h) 100% 56% / 0.32));
+  will-change: transform;
+}
+
+@keyframes torus-drift {
+  0%, 100% { transform: rotateX(61deg) rotateZ(-13deg) rotateY(0deg); }
+  50% { transform: rotateX(57deg) rotateZ(-5deg) rotateY(7deg); }
+}
+
+/* Glow lives on the element that is not masked. */
+.orb--torus .orb__torus::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    transparent 34%,
+    hsl(var(--orb-h) 100% 62% / 0.32) 56%,
+    hsl(calc(var(--orb-h) + 20) 100% 70% / 0.16) 76%,
+    transparent 94%
+  );
+  filter: blur(calc(var(--s) * 0.06));
+}
+
+/* The band. Two radial passes fake the tube: one darkens the inner and outer
+   rims, one lays a specular sheen along the crown of the tube. The conic
+   gradient then wraps the key light around the ring. */
+.orb--torus .orb__torus::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image:
+    linear-gradient(180deg, hsl(calc(var(--orb-h) + 40) 60% 3% / 0.4) 0%, transparent 42%),
+    radial-gradient(
+      closest-side,
+      transparent 0 41%,
+      hsl(calc(var(--orb-h) + 40) 70% 4% / 0.92) 47%,
+      hsl(calc(var(--orb-h) + 30) 92% 32% / 0.55) 55%,
+      transparent 63%,
+      transparent 76%,
+      hsl(calc(var(--orb-h) + 25) 100% 88% / 0.34) 85%,
+      hsl(calc(var(--orb-h) + 40) 70% 4% / 0.78) 92%,
+      transparent 97%
+    ),
+    radial-gradient(
+      closest-side,
+      transparent 54%,
+      hsl(calc(var(--orb-h) + 30) 100% 96% / 0.5) 68%,
+      transparent 79%
+    ),
+    conic-gradient(
+      from 205deg,
+      hsl(var(--orb-h) 100% 96%) 0deg,
+      hsl(var(--orb-h) 95% 72%) 28deg,
+      hsl(calc(var(--orb-h) + 14) 90% 40%) 74deg,
+      hsl(var(--orb-h) 96% 58%) 112deg,
+      hsl(calc(var(--orb-h) + 8) 100% 90%) 150deg,
+      hsl(calc(var(--orb-h) + 28) 96% 78%) 196deg,
+      hsl(calc(var(--orb-h) + 34) 86% 28%) 244deg,
+      hsl(var(--orb-h) 98% 64%) 292deg,
+      hsl(calc(var(--orb-h) + 10) 100% 92%) 330deg,
+      hsl(var(--orb-h) 100% 96%) 360deg
+    );
+  -webkit-mask: radial-gradient(closest-side, transparent 44%, #000 46%, #000 94%, transparent 96%);
+  mask: radial-gradient(closest-side, transparent 44%, #000 46%, #000 94%, transparent 96%);
+}
+
+/* ==========================================================================
+   VARIANT: ripple — a glass bead sending out sonar rings
+   ========================================================================== */
+
+.orb--ripple .orb__body {
+  box-shadow:
+    0 0 calc(var(--s) * 0.2) hsl(var(--orb-h) 100% 68% / calc(var(--glow) * 0.4)),
+    0 0 calc(var(--s) * 0.66) hsl(calc(var(--orb-h) + 35) 100% 60% / calc(var(--glow) * 0.24));
+}
+
+.orb--ripple .orb__ripples { inset: 0; }
+
+/* Rings live behind the bead, so they appear to be born inside it and then
+   break past the silhouette. */
+.orb--ripple .orb__ripples i {
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  border: 2px solid hsl(calc(var(--orb-h) + 30) 100% 90% / 0.85);
+  background: radial-gradient(
+    closest-side,
+    transparent 50%,
+    hsl(var(--orb-h) 100% 74% / 0.24) 68%,
+    hsl(var(--orb-h) 100% 80% / 0.1) 84%,
+    transparent 96%
+  );
+  box-shadow:
+    0 0 calc(var(--s) * 0.05) hsl(var(--orb-h) 100% 70% / 0.75),
+    inset 0 0 calc(var(--s) * 0.04) hsl(var(--orb-h) 100% 72% / 0.5);
+  opacity: 0;
+  animation: ripple-out calc(var(--beat) * 2.4) cubic-bezier(0.18, 0.62, 0.28, 1) infinite;
+  animation-delay: calc(var(--i, 0) * var(--beat) * -0.6);
+  will-change: transform, opacity;
+}
+
+@keyframes ripple-out {
+  0% { transform: scale(0.7); opacity: 0; }
+  9% { opacity: 1; }
+  52% { opacity: 0.62; }
+  82% { opacity: 0.16; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+.orb--ripple .orb__glass {
+  inset: 33%;
+  background:
+    radial-gradient(circle at 70% 82%, hsl(calc(var(--orb-h) + 55) 100% 70% / 0.5) 0%, transparent 42%),
+    radial-gradient(
+      circle at 32% 24%,
+      hsl(calc(var(--orb-h) + 12) 100% 96%) 0%,
+      hsl(var(--orb-h) 98% 80%) 14%,
+      hsl(var(--orb-h) 96% 60%) 38%,
+      hsl(calc(var(--orb-h) + 18) 92% 40%) 62%,
+      hsl(calc(var(--orb-h) + 34) 84% 20%) 84%,
+      hsl(calc(var(--orb-h) + 44) 76% 10%) 100%
+    );
+  box-shadow:
+    inset calc(var(--s) * -0.014) calc(var(--s) * -0.02) calc(var(--s) * 0.05)
+      hsl(calc(var(--orb-h) + 45) 85% 4% / 0.85),
+    inset calc(var(--s) * 0.008) calc(var(--s) * 0.012) calc(var(--s) * 0.035)
+      hsl(calc(var(--orb-h) + 40) 100% 82% / 0.4),
+    0 0 calc(var(--s) * 0.16) hsl(var(--orb-h) 100% 64% / calc(var(--glow) * 0.8)),
+    0 0 calc(var(--s) * 0.4) hsl(var(--orb-h) 100% 60% / calc(var(--glow) * 0.34));
+  animation: orb-breathe calc(var(--beat) * 1.6) ease-in-out infinite;
+}
+
+/* ==========================================================================
+   VARIANT: particles — two shells of dust orbiting a hot nucleus
+   ========================================================================== */
+
+.orb--particles .orb__body { perspective: calc(var(--s) * 5); }
+
+.orb--particles .orb__dust {
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* The back shell is the same field rotated 180deg, dimmed and softened.
+   Two shells is cheaper than real occlusion and reads the same at size. */
+.orb--particles .orb__dust--back { transform: rotateY(180deg); }
+.orb--particles .orb__dust--back i {
+  opacity: 0.42;
+  filter: blur(calc(var(--s) * 0.004)) brightness(0.8);
+}
+
+.orb--particles .orb__dust i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--s) * var(--sz, 0.024));
+  height: calc(var(--s) * var(--sz, 0.024));
+  margin-left: calc(var(--s) * var(--sz, 0.024) * -0.5);
+  margin-top: calc(var(--s) * var(--sz, 0.024) * -0.5);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    #fff 0%,
+    hsl(calc(var(--orb-h) + 40) 100% 80%) 55%,
+    hsl(var(--orb-h) 100% 62%) 100%
+  );
+  box-shadow: 0 0 calc(var(--s) * var(--sz, 0.024) * 4.5) hsl(var(--orb-h) 100% 68% / 0.9);
+  /* Base pose, also the reduced-motion pose. */
+  transform: rotateY(var(--a, 0deg)) translateZ(calc(var(--s) * var(--r, 0.36)))
+    translateY(calc(var(--s) * var(--y, 0)));
+  animation: dust-orbit var(--dur, 14s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform;
+}
+
+@keyframes dust-orbit {
+  from {
+    transform: rotateY(var(--a, 0deg)) translateZ(calc(var(--s) * var(--r, 0.36)))
+      translateY(calc(var(--s) * var(--y, 0)));
+  }
+  to {
+    transform: rotateY(calc(var(--a, 0deg) + 360deg)) translateZ(calc(var(--s) * var(--r, 0.36)))
+      translateY(calc(var(--s) * var(--y, 0)));
+  }
+}
+
+.orb--particles .orb__core-orb {
+  inset: 27%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 72% 84%, hsl(calc(var(--orb-h) + 55) 100% 70% / 0.45) 0%, transparent 40%),
+    radial-gradient(
+      circle at 33% 25%,
+      hsl(calc(var(--orb-h) + 45) 100% 96%) 0%,
+      hsl(calc(var(--orb-h) + 10) 100% 80%) 16%,
+      hsl(var(--orb-h) 98% 58%) 44%,
+      hsl(calc(var(--orb-h) + 26) 92% 34%) 72%,
+      hsl(calc(var(--orb-h) + 42) 84% 12%) 100%
+    );
+  box-shadow:
+    inset calc(var(--s) * -0.02) calc(var(--s) * -0.028) calc(var(--s) * 0.07)
+      hsl(calc(var(--orb-h) + 45) 85% 4% / 0.9),
+    inset calc(var(--s) * 0.012) calc(var(--s) * 0.018) calc(var(--s) * 0.05)
+      hsl(calc(var(--orb-h) + 40) 100% 82% / 0.4),
+    0 0 calc(var(--s) * 0.24) hsl(var(--orb-h) 100% 62% / 0.7),
+    0 0 calc(var(--s) * 0.52) hsl(var(--orb-h) 100% 58% / 0.3);
+  animation: orb-breathe calc(var(--beat) * 1.8) ease-in-out infinite;
+}
+
+.orb--particles .orb__core-orb .orb__spec { filter: blur(calc(var(--s) * 0.006)); }
+.orb--particles .orb__core-orb .orb__sheen { filter: blur(calc(var(--s) * 0.02)); opacity: 0.85; }
+
+/* ==========================================================================
+   VARIANT: aurora — ribbons of light trapped inside a dark glass marble
+   ========================================================================== */
+
+.orb--aurora .orb__body {
+  box-shadow:
+    0 0 calc(var(--s) * 0.2) hsl(var(--orb-h) 100% 66% / calc(var(--glow) * 0.5)),
+    0 0 calc(var(--s) * 0.64) hsl(calc(var(--orb-h) - 60) 100% 62% / calc(var(--glow) * 0.32));
+}
+
+/* A near-neutral base is what makes the veils read as colour. Tinting the
+   glass itself would flatten everything into one hue. */
+.orb--aurora .orb__glass {
+  background:
+    radial-gradient(circle at 36% 28%, hsl(264 24% 14%) 0%, hsl(258 22% 8%) 44%, hsl(255 20% 3%) 100%);
+  box-shadow:
+    inset calc(var(--s) * -0.035) calc(var(--s) * -0.05) calc(var(--s) * 0.12)
+      hsl(255 30% 2% / 0.9),
+    0 0 0 1px hsl(calc(var(--orb-h) + 70) 100% 90% / 0.16);
+}
+
+.orb--aurora .orb__veil {
+  inset: -38%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from var(--from, 0deg),
+    transparent 0deg,
+    hsl(calc(var(--orb-h) + var(--dh, 0)) 100% 63% / 0) 30deg,
+    hsl(calc(var(--orb-h) + var(--dh, 0)) 100% 64% / 0.72) 64deg,
+    hsl(calc(var(--orb-h) + var(--dh, 0) + 20) 100% 68% / 0.3) 98deg,
+    transparent 130deg,
+    transparent 250deg,
+    hsl(calc(var(--orb-h) + var(--dh, 0) - 25) 100% 66% / 0.12) 280deg,
+    transparent 310deg,
+    transparent 360deg
+  );
+  filter: blur(calc(var(--s) * 0.1));
+  mix-blend-mode: screen;
+  animation: orb-spin calc(var(--spin) * var(--mul, 1.6)) linear infinite;
+  animation-direction: var(--dir, normal);
+  will-change: transform;
+}
+
+/* Limb darkening is what keeps the light inside the marble instead of
+   letting it read as a flat swirl. */
+.orb--aurora .orb__limb {
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    transparent 42%,
+    hsl(255 26% 3% / 0.08) 62%,
+    hsl(255 26% 3% / 0.52) 82%,
+    hsl(255 26% 2% / 0.84) 96%,
+    hsl(255 26% 2% / 0.55) 100%
+  );
+}
+
+.orb--aurora .orb__sheen { opacity: 0.45; }
+.orb--aurora .orb__grain { opacity: 0.16; }
+</style>
+</head>
+<body>
+  <a class="back" href="../index.html">&#8592; All orbs</a>
+  <main class="demo">
+    <div class="orb-stage" data-state="idle" style="--orb-h:186;--orb-size:168px"
+         role="img" aria-label="Glass bead with sonar rings, idle">
+<div class="orb orb--ripple">
+  <span class="orb__aura" aria-hidden="true"></span>
+  <div class="orb__body">
+    <div class="orb__ripples">
+      <i style="--i:0"></i>
+      <i style="--i:1"></i>
+      <i style="--i:2"></i>
+      <i style="--i:3"></i>
+    </div>
+    <div class="orb__glass">
+      <span class="orb__sheen"></span>
+      <span class="orb__spec"></span>
+      <span class="orb__rim"></span>
+      <span class="orb__grain"></span>
+    </div>
+  </div>
+  <span class="orb__shadow" aria-hidden="true"></span>
+</div>
+    </div>
+
+    <div class="meta">
+      <h1>Sonar Ripple</h1>
+      <p>A glass bead breathing inside four staggered rings. Every ring is retimed by the same state clock.</p>
+    </div>
+
+    <div class="states" role="group" aria-label="Orb state">
+      <button type="button" data-set="idle" aria-pressed="true">idle</button>
+      <button type="button" data-set="listening" aria-pressed="false">listening</button>
+      <button type="button" data-set="thinking" aria-pressed="false">thinking</button>
+      <button type="button" data-set="speaking" aria-pressed="false">speaking</button>
+    </div>
+    <p class="hint">Click a state. Everything here is CSS &mdash; the script only flips one attribute.</p>
+  </main>
+
+<script>
+  // Demo only. The orb is pure CSS; this block just switches the attribute.
+  var stage = document.querySelector(".orb-stage");
+  var buttons = Array.prototype.slice.call(document.querySelectorAll("[data-set]"));
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      var state = button.dataset.set;
+      stage.dataset.state = state;
+      stage.setAttribute("aria-label", "Glass bead with sonar rings, " + state);
+      buttons.forEach(function (b) {
+        b.setAttribute("aria-pressed", String(b === button));
+      });
+    });
+  });
+</script>
+</body>
+</html>

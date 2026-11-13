@@ -1,6 +1,6 @@
 {
   "name": "orbs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Photoreal CSS orbs for AI assistants.",
   "component": "orb.js",
   "componentTag": "assistant-orb",
@@ -57,6 +57,42 @@
       "material": "plasma",
       "file": "orbs/orb-grain-glow.html",
       "tags": ["plasma", "halo", "dust", "soft"]
+    },
+    {
+      "id": "orb-3d-torus",
+      "variant": "torus",
+      "name": "Metal Torus",
+      "hue": 32,
+      "material": "metal",
+      "file": "orbs/orb-3d-torus.html",
+      "tags": ["metal", "3d", "torus", "brushed"]
+    },
+    {
+      "id": "orb-ripple",
+      "variant": "ripple",
+      "name": "Sonar Ripple",
+      "hue": 186,
+      "material": "glass",
+      "file": "orbs/orb-ripple.html",
+      "tags": ["rings", "sonar", "glass", "pulse"]
+    },
+    {
+      "id": "orb-3d-particles",
+      "variant": "particles",
+      "name": "Dust Field",
+      "hue": 245,
+      "material": "dust",
+      "file": "orbs/orb-3d-particles.html",
+      "tags": ["3d", "dust", "orbit", "depth"]
+    },
+    {
+      "id": "orb-aurora",
+      "variant": "aurora",
+      "name": "Aurora Marble",
+      "hue": 320,
+      "material": "glass",
+      "file": "orbs/orb-aurora.html",
+      "tags": ["aurora", "veils", "glass", "light"]
     }
   ]
 }

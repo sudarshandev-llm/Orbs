@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<title>Orb preview</title>
+<!--
+  Screenshot source for the per-orb PNGs in assets/previews/.
+
+    assets/orb-preview.html?variant=torus&hue=32&size=170
+
+  The frame is deliberately larger than the orb so the bloom and the contact
+  shadow have room to fall off before the edge of the image.
+-->
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(75% 130% at 50% -10%, #16122f 0%, #0a0817 52%, #05040c 100%);
+  }
+  /* Absolute centring, not grid centring: the stage is wider than the crop,
+     and an overflowing grid item is allowed to align to start. */
+  assistant-orb {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+</style>
+</head>
+<body>
+<script src="../orb.js"></script>
+<script>
+  var q = new URLSearchParams(location.search);
+  var orb = document.createElement("assistant-orb");
+  orb.setAttribute("variant", q.get("variant") || "sphere");
+  orb.setAttribute("hue", q.get("hue") || "265");
+  orb.setAttribute("size", q.get("size") || "300");
+  orb.setAttribute("state", q.get("state") || "idle");
+  orb.setAttribute("decorative", "");
+  document.body.appendChild(orb);
+</script>
+</body>
+</html>

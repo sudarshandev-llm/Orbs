@@ -4,43 +4,57 @@
 <meta charset="utf-8">
 <meta name="color-scheme" content="dark">
 <title>Orbs preview</title>
+<!--
+  README banner. Rendered by scripts/screenshots.mjs with the real
+  <assistant-orb> component, so it can never drift from the shipped orbs.
+  Two rows: five on top, four underneath.
+-->
 <style>
   html, body { margin: 0; height: 100%; }
   body {
     display: grid;
     place-items: center;
+    overflow: hidden;
     background:
       radial-gradient(75% 130% at 50% -10%, #16122f 0%, #0a0817 52%, #05040c 100%);
-    font: 500 11px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font: 500 10px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     letter-spacing: .16em;
     text-transform: uppercase;
     color: #6f6a92;
   }
-  .row { display: flex; align-items: center; gap: 54px; padding: 20px 40px; }
-  figure { margin: 0; display: grid; justify-items: center; gap: 18px; position: relative; }
+  .banner { display: grid; gap: 2px; }
+  .row { display: flex; justify-content: center; gap: 28px; }
+  figure { margin: 0; position: relative; }
   figure::before {
     content: "";
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 150px;
-    height: 150px;
-    transform: translate(-50%, -62%);
+    width: 170px;
+    height: 170px;
+    transform: translate(-50%, -50%);
     border-radius: 50%;
-    background: radial-gradient(circle, hsl(var(--h) 95% 60% / .18), transparent 68%);
-    filter: blur(10px);
+    background: radial-gradient(circle, hsl(var(--h) 95% 60% / .16), transparent 68%);
+    filter: blur(12px);
   }
-  figcaption { font-size: 10.5px; color: #7d7799; }
   assistant-orb { position: relative; }
 </style>
 </head>
 <body>
-  <div class="row">
-    <figure style="--h:265"><assistant-orb variant="sphere" size="118" hue="265" decorative></assistant-orb><figcaption>Glass sphere</figcaption></figure>
-    <figure style="--h:196"><assistant-orb variant="gyro" size="118" hue="196" decorative></assistant-orb><figcaption>Neon gyro</figcaption></figure>
-    <figure style="--h:168"><assistant-orb variant="globe" size="118" hue="168" decorative></assistant-orb><figcaption>Wire globe</figcaption></figure>
-    <figure style="--h:302"><assistant-orb variant="grain" size="118" hue="302" decorative></assistant-orb><figcaption>Grain</figcaption></figure>
-    <figure style="--h:222"><assistant-orb variant="grain-glow" size="118" hue="222" decorative></assistant-orb><figcaption>Grain glow</figcaption></figure>
+  <div class="banner">
+    <div class="row">
+      <figure style="--h:265"><assistant-orb variant="sphere" size="118" hue="265" decorative></assistant-orb></figure>
+      <figure style="--h:196"><assistant-orb variant="gyro" size="118" hue="196" decorative></assistant-orb></figure>
+      <figure style="--h:168"><assistant-orb variant="globe" size="118" hue="168" decorative></assistant-orb></figure>
+      <figure style="--h:302"><assistant-orb variant="grain" size="118" hue="302" decorative></assistant-orb></figure>
+      <figure style="--h:222"><assistant-orb variant="grain-glow" size="118" hue="222" decorative></assistant-orb></figure>
+    </div>
+    <div class="row">
+      <figure style="--h:32"><assistant-orb variant="torus" size="118" hue="32" decorative></assistant-orb></figure>
+      <figure style="--h:186"><assistant-orb variant="ripple" size="118" hue="186" decorative></assistant-orb></figure>
+      <figure style="--h:245"><assistant-orb variant="particles" size="118" hue="245" decorative></assistant-orb></figure>
+      <figure style="--h:320"><assistant-orb variant="aurora" size="118" hue="320" decorative></assistant-orb></figure>
+    </div>
   </div>
   <script src="../orb.js"></script>
 </body>

@@ -60,6 +60,42 @@ const variants = [
     label: "Grain glow cloud",
     note: "No hard surface. Layered plasma, dust grain and a wide halo instead of a rim.",
   },
+  {
+    file: "orb-3d-torus.html",
+    markup: "torus.html",
+    variant: "torus",
+    title: "Metal Torus",
+    hue: 32,
+    label: "Brushed metal torus",
+    note: "A single element tilted in 3D. Radial passes shade the tube, a conic wraps the key light around it.",
+  },
+  {
+    file: "orb-ripple.html",
+    markup: "ripple.html",
+    variant: "ripple",
+    title: "Sonar Ripple",
+    hue: 186,
+    label: "Glass bead with sonar rings",
+    note: "A glass bead breathing inside four staggered rings. Every ring is retimed by the same state clock.",
+  },
+  {
+    file: "orb-3d-particles.html",
+    markup: "particles.html",
+    variant: "particles",
+    title: "Dust Field",
+    hue: 245,
+    label: "Orbiting dust field",
+    note: "Two shells of real 3D dust orbit a hot nucleus. The rear shell is dimmed and softened for depth.",
+  },
+  {
+    file: "orb-aurora.html",
+    markup: "aurora.html",
+    variant: "aurora",
+    title: "Aurora Marble",
+    hue: 320,
+    label: "Aurora inside a glass marble",
+    note: "Three conic veils run at different speeds. A dark limb keeps the light inside the marble.",
+  },
 ];
 
 const states = ["idle", "listening", "thinking", "speaking"];

@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="assets/preview.png" alt="Five orbs: glass sphere, neon gyro, wire globe, grain and grain glow" width="920">
+  <img src="assets/preview.png" alt="Nine orbs: glass sphere, neon gyro, wire globe, grain, grain glow, metal torus, sonar ripple, dust field and aurora marble" width="920">
 </p>
 
 <h1 align="center">Orbs</h1>
 
 <p align="center">
   <strong>Photoreal CSS orbs for AI assistants.</strong><br>
-  Five materials, four states, zero dependencies, no canvas, no shaders, no images.
+  Nine materials, four states, zero dependencies, no canvas, no shaders, no images.
 </p>
 
 <p align="center">
@@ -15,7 +15,11 @@
   <a href="orbs/orb-3d-gyro.html">Gyro</a> ·
   <a href="orbs/orb-3d-globe.html">Globe</a> ·
   <a href="orbs/orb-grain.html">Grain</a> ·
-  <a href="orbs/orb-grain-glow.html">Grain glow</a>
+  <a href="orbs/orb-grain-glow.html">Grain glow</a> ·
+  <a href="orbs/orb-3d-torus.html">Torus</a> ·
+  <a href="orbs/orb-ripple.html">Ripple</a> ·
+  <a href="orbs/orb-3d-particles.html">Dust</a> ·
+  <a href="orbs/orb-aurora.html">Aurora</a>
 </p>
 
 ---
@@ -33,6 +37,15 @@ That is the whole trick, and it is all CSS.
 <assistant-orb variant="sphere" state="listening" size="168" hue="265"></assistant-orb>
 ```
 
+## Previews
+
+| <img src="assets/previews/sphere.png" width="200" alt="Glass Sphere orb"><br>**Glass Sphere** | <img src="assets/previews/gyro.png" width="200" alt="Neon Gyro orb"><br>**Neon Gyro** | <img src="assets/previews/globe.png" width="200" alt="Wire Globe orb"><br>**Wire Globe** |
+| :-: | :-: | :-: |
+| <img src="assets/previews/grain.png" width="200" alt="Grain orb"><br>**Grain** | <img src="assets/previews/grain-glow.png" width="200" alt="Grain Glow orb"><br>**Grain Glow** | <img src="assets/previews/torus.png" width="200" alt="Metal Torus orb"><br>**Metal Torus** |
+| <img src="assets/previews/ripple.png" width="200" alt="Sonar Ripple orb"><br>**Sonar Ripple** | <img src="assets/previews/particles.png" width="200" alt="Dust Field orb"><br>**Dust Field** | <img src="assets/previews/aurora.png" width="200" alt="Aurora Marble orb"><br>**Aurora Marble** |
+
+Every image is a real screenshot of the component, captured with `npm run shots`.
+
 ## The collection
 
 | Orb | Material | Demo |
@@ -42,6 +55,10 @@ That is the whole trick, and it is all CSS.
 | **Wire Globe** | Real meridians and latitudes in 3D, atmosphere rim, volumetric haze. | [`orb-3d-globe.html`](orbs/orb-3d-globe.html) |
 | **Grain** | Sandblasted. Wide specular, two grain layers running at different speeds. | [`orb-grain.html`](orbs/orb-grain.html) |
 | **Grain Glow** | No surface at all. Plasma blobs, dust grain, wide halo. | [`orb-grain-glow.html`](orbs/orb-grain-glow.html) |
+| **Metal Torus** | One element tilted in 3D. Tube shading plus a conic light wrap. | [`orb-3d-torus.html`](orbs/orb-3d-torus.html) |
+| **Sonar Ripple** | Glass bead inside four staggered rings, all driven by the state clock. | [`orb-ripple.html`](orbs/orb-ripple.html) |
+| **Dust Field** | Two 3D dust shells around a hot nucleus; the rear shell is dimmed. | [`orb-3d-particles.html`](orbs/orb-3d-particles.html) |
+| **Aurora Marble** | Three conic veils inside a dark marble, held in by a dark limb. | [`orb-aurora.html`](orbs/orb-aurora.html) |
 
 Open `index.html` for the gallery, or any `orbs/*.html` file on its own — each one is fully
 self-contained and has a state switcher so you can see all four states.
@@ -70,7 +87,7 @@ orb.addEventListener("orbstatechange", (e) => {
 
 Three ways, pick one:
 
-**1. The component** — copy `orb.js` (32 kB, no imports, no network requests) and use the tag:
+**1. The component** — copy `orb.js` (47 kB, no imports, no network requests) and use the tag:
 
 ```html
 <script src="orb.js"></script>
@@ -98,7 +115,7 @@ Change a state by flipping one attribute. No JS required at all.
 
 | Attribute | Default | Values |
 | --- | --- | --- |
-| `variant` | `sphere` | `sphere`, `gyro`, `globe`, `grain`, `grain-glow` |
+| `variant` | `sphere` | `sphere`, `gyro`, `globe`, `grain`, `grain-glow`, `torus`, `ripple`, `particles`, `aurora` |
 | `state` | `idle` | `idle`, `listening`, `thinking`, `speaking` |
 | `size` | `168` | `24`–`900` (px) |
 | `hue` | `265` | `0`–`360` |
@@ -179,7 +196,10 @@ src/component.js        component source, with placeholders
 src/markup/*.html       per-variant markup
 scripts/build.mjs       inlines orb.css + src/markup into orbs/ and orb.js
 scripts/serve.mjs       tiny zero-dependency static server
-assets/preview.html     the README banner, rendered from the real component
+scripts/screenshots.mjs renders assets/previews/*.png and the banner with a real browser
+assets/preview.html     the README banner source, rendered from the real component
+assets/orb-preview.html single-orb screenshot source (?variant=&hue=&size=)
+assets/previews/*.png   one 600×600 preview per orb, captured on a dark stage
 index.html              the gallery
 orbs.json               machine-readable manifest
 ```
@@ -189,6 +209,7 @@ orbs.json               machine-readable manifest
 ```bash
 npm run build   # regenerate orbs/*.html and orb.js from orb.css + src/
 npm run dev     # serve the gallery at http://localhost:4173
+npm run shots   # re-render assets/previews/*.png and the README banner
 ```
 
 Edit `orb.css` or `src/`, never the generated files. The build reads the stylesheet once and
