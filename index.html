@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#07060f">
+<title>Orbs — realistic CSS orbs for AI assistants</title>
+<meta name="description" content="Five photoreal, zero-dependency CSS orbs for AI assistants. Copy one line, get glass, neon, wireframe and grain orbs with idle, listening, thinking and speaking states.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3CradialGradient id='g' cx='35%25' cy='30%25'%3E%3Cstop offset='0' stop-color='%23d9ccff'/%3E%3Cstop offset='.45' stop-color='%237c5cff'/%3E%3Cstop offset='1' stop-color='%23140f33'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23g)'/%3E%3C/svg%3E">
+<style>
+  /* ---------- reset ---------- */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body, h1, h2, h3, p, figure, ul { margin: 0; }
+  ul { padding: 0; list-style: none; }
+  button, input { font: inherit; color: inherit; }
+  img { display: block; max-width: 100%; }
+
+  /* ---------- tokens ---------- */
+  :root {
+    --bg: #07060f;
+    --ink: #ece9ff;
+    --muted: #8e88ab;
+    --faint: #5f5a7c;
+    --line: #ffffff14;
+    --line-strong: #ffffff26;
+    --card: #ffffff05;
+    --hue: 265;
+    --accent: hsl(var(--hue) 92% 68%);
+    --accent-soft: hsl(var(--hue) 92% 68% / .16);
+    --radius: 18px;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.6 var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* ambient light + film grain over the whole page */
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::before {
+    background:
+      radial-gradient(60% 45% at 12% 0%, hsl(268 90% 58% / .18), transparent 70%),
+      radial-gradient(50% 40% at 88% 8%, hsl(190 95% 55% / .1), transparent 70%),
+      radial-gradient(70% 50% at 50% 100%, hsl(300 90% 55% / .08), transparent 70%);
+  }
+  body::after {
+    opacity: .035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    width: min(1180px, 100% - 44px);
+    margin-inline: auto;
+  }
+
+  a { color: inherit; }
+
+  .skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    background: var(--accent);
+    color: #0b0716;
+    padding: 8px 14px;
+    border-radius: 0 0 10px 0;
+    font-weight: 600;
+    z-index: 10;
+  }
+  .skip:focus { left: 0; }
+
+  /* ---------- header ---------- */
+  .masthead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 26px 0 0;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: -.01em;
+  }
+  .brand__mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 27%, #efe7ff 0%, #b39dff 18%, hsl(var(--hue) 92% 62%) 46%, hsl(calc(var(--hue) + 40) 80% 18%) 82%, #0a0718 100%);
+    box-shadow: 0 0 18px hsl(var(--hue) 95% 62% / .55), inset -2px -3px 5px #0009;
+  }
+  .brand__name { font-size: 16px; }
+  .brand__tag {
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--faint);
+    border-left: 1px solid var(--line-strong);
+    padding-left: 11px;
+    margin-left: 2px;
+  }
+  .masthead__links { display: flex; align-items: center; gap: 8px; }
+  .masthead__links a {
+    text-decoration: none;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+  }
+  .masthead__links a:hover { color: var(--ink); border-color: var(--line); background: #ffffff07; }
+
+  /* ---------- hero ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+    align-items: center;
+    gap: clamp(24px, 5vw, 72px);
+    padding: clamp(48px, 8vw, 96px) 0 clamp(36px, 5vw, 64px);
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    background: #ffffff06;
+    padding: 6px 12px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+  }
+  .eyebrow__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+  h1 {
+    font-size: clamp(2.35rem, 5.6vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -.035em;
+    font-weight: 620;
+    background: linear-gradient(180deg, #ffffff 0%, #e5deff 42%, #a99ee0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lede {
+    margin-top: 20px;
+    max-width: 46ch;
+    font-size: clamp(15px, 1.5vw, 17px);
+    color: var(--muted);
+  }
+  .lede strong { color: var(--ink); font-weight: 550; }
+
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+
+  .btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: #ffffff0a;
+    color: var(--ink);
+    padding: 10px 18px;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, transform .18s ease;
+  }
+  .btn:hover { background: #ffffff12; border-color: #ffffff33; }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn--primary {
+    background: linear-gradient(180deg, hsl(var(--hue) 95% 72%), hsl(var(--hue) 88% 58%));
+    border-color: hsl(var(--hue) 90% 78% / .55);
+    color: #100a24;
+    font-weight: 600;
+    box-shadow: 0 8px 30px hsl(var(--hue) 90% 55% / .3);
+  }
+  .btn--primary:hover { background: linear-gradient(180deg, hsl(var(--hue) 95% 78%), hsl(var(--hue) 90% 64%)); }
+  .btn--copied { border-color: hsl(150 80% 60% / .6); color: hsl(150 80% 74%); }
+
+  .hero__stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: clamp(280px, 40vw, 420px);
+  }
+  .hero__stage::before {
+    content: "";
+    position: absolute;
+    inset: 12% 6%;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsl(var(--hue) 95% 60% / .16), transparent 66%);
+    filter: blur(28px);
+  }
+  .hero__caption {
+    position: absolute;
+    bottom: 2%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+  .hero__caption b { color: var(--muted); font-weight: 500; }
+  .kbd {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    border: 1px solid var(--line-strong);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--muted);
+  }
+
+  /* ---------- code ---------- */
+  .code {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff09, #ffffff03);
+    overflow: hidden;
+  }
+  .code__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 10px 8px 14px;
+    border-bottom: 1px solid var(--line);
+    background: #ffffff04;
+  }
+  .code__name {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--faint);
+    letter-spacing: .04em;
+  }
+  .code pre {
+    margin: 0;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #cfc7f0;
+    tab-size: 2;
+  }
+  .code .c { color: #6f6a92; }
+  .code .t { color: #9be7ff; }
+  .code .a { color: #ffd479; }
+  .code .s { color: #a6f0c6; }
+  .copy {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #ffffff08;
+    color: var(--muted);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color .16s ease, background .16s ease, border-color .16s ease;
+  }
+  .copy:hover { color: var(--ink); background: #ffffff12; }
+  .copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .copy.is-done { color: hsl(150 80% 70%); border-color: hsl(150 80% 60% / .5); }
+
+  /* ---------- lab / controls ---------- */
+  .lab {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 22px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ffffff07, #ffffff02);
+    backdrop-filter: blur(12px);
+    margin-bottom: 26px;
+  }
+  .lab__group { display: flex; align-items: center; gap: 9px; }
+  .lab__label {
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .seg {
+    display: inline-flex;
+    padding: 3px;
+    gap: 2px;
+    border-radius: 999px;
+    background: #00000040;
+    border: 1px solid var(--line);
+  }
+  .seg button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .16s ease, color .16s ease;
+  }
+  .seg button:hover { color: var(--ink); }
+  .seg button[aria-pressed="true"] {
+    background: hsl(var(--hue) 92% 68% / .2);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px hsl(var(--hue) 92% 74% / .35);
+  }
+  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 116px;
+    height: 22px;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, hsl(var(--hue) 92% 68% / .8), hsl(calc(var(--hue) + 60) 92% 66% / .35));
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: #fff;
+    border: 0;
+    box-shadow: 0 0 0 4px hsl(var(--hue) 92% 68% / .22), 0 1px 4px #0008;
+  }
+  input[type="range"]::-moz-range-track { height: 4px; border-radius: 999px; background: #ffffff26; }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px; border: 0; border-radius: 50%; background: #fff;
+    box-shadow: 0 0 0 4px hsl(var(--hue) 92% 68% / .22);
+  }
+  input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 999px; }
+  .readout {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 42px;
+    text-align: right;
+  }
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .switch__track {
+    width: 34px;
+    height: 19px;
+    border-radius: 999px;
+    background: #ffffff1a;
+    border: 1px solid var(--line-strong);
+    position: relative;
+    transition: background .18s ease, border-color .18s ease;
+  }
+  .switch__track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #cfc9e8;
+    transition: transform .18s ease, background .18s ease;
+  }
+  .switch input:checked + .switch__track { background: hsl(var(--hue) 92% 62% / .45); border-color: hsl(var(--hue) 92% 72% / .6); }
+  .switch input:checked + .switch__track::after { transform: translateX(15px); background: #fff; }
+  .switch input:focus-visible + .switch__track { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .lab__spacer { flex: 1 1 8px; }
+  .lab__meta { font-size: 11px; color: var(--faint); }
+
+  /* ---------- gallery ---------- */
+  .gallery-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  h2 {
+    font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+    letter-spacing: -.02em;
+    font-weight: 600;
+  }
+  .gallery-head p { color: var(--muted); font-size: 13.5px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(120% 90% at 50% -10%, hsl(var(--card-hue, 265) 90% 60% / .12), transparent 60%),
+      linear-gradient(180deg, #ffffff06, #ffffff02);
+    overflow: hidden;
+    transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+  }
+  .card:hover {
+    border-color: #ffffff26;
+    transform: translateY(-2px);
+    box-shadow: 0 18px 50px -24px hsl(var(--card-hue, 265) 90% 55% / .55);
+  }
+  .card__stage {
+    display: grid;
+    place-items: center;
+    padding: 26px 12px 6px;
+    min-height: 214px;
+  }
+  .card__body { padding: 4px 16px 16px; display: grid; gap: 10px; }
+  .card__title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .card__title h3 { font-size: 14.5px; font-weight: 600; letter-spacing: -.01em; }
+  .card__id {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--faint);
+    letter-spacing: .02em;
+  }
+  .card__desc { font-size: 12.5px; color: var(--muted); line-height: 1.55; min-height: 39px; }
+  .card__actions { display: flex; gap: 7px; margin-top: 2px; }
+  .card__actions .btn { padding: 6px 12px; font-size: 11.5px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip {
+    font-size: 10px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--faint);
+    border: 1px solid var(--line);
+    padding: 3px 7px;
+    border-radius: 6px;
+  }
+
+  /* ---------- sections ---------- */
+  section { padding: clamp(44px, 7vw, 84px) 0 0; }
+  .section-head { max-width: 60ch; margin-bottom: 22px; }
+  .section-head p { margin-top: 8px; color: var(--muted); font-size: 14.5px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, .85fr);
+    gap: 26px;
+    align-items: start;
+  }
+
+  .stack { display: grid; gap: 14px; }
+
+  /* theming swatches */
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+  .swatch {
+    appearance: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid #ffffff26;
+    cursor: pointer;
+    background:
+      radial-gradient(circle at 32% 28%, #fff 0%, transparent 34%),
+      radial-gradient(circle at 50% 50%, hsl(var(--sw) 95% 66%) 0%, hsl(var(--sw) 80% 26%) 72%, hsl(var(--sw) 70% 10%) 100%);
+    box-shadow: 0 0 0 1px #0006, 0 4px 14px hsl(var(--sw) 90% 55% / .35);
+    transition: transform .16s ease, box-shadow .16s ease;
+  }
+  .swatch:hover { transform: translateY(-2px) scale(1.05); }
+  .swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px #0b0918, 0 0 0 4px hsl(var(--sw) 95% 70%); }
+  .swatch:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+  .theme-demo {
+    display: grid;
+    place-items: center;
+    min-height: 240px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: radial-gradient(circle at 50% 45%, hsl(var(--hue) 90% 58% / .12), transparent 65%), #ffffff04;
+  }
+
+  /* spec table */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid #ffffff0d; vertical-align: top; }
+  th { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); font-weight: 500; background: #ffffff04; }
+  tr:last-child td { border-bottom: 0; }
+  td code, p code, li code, .inline-code {
+    font-family: var(--mono);
+    font-size: .9em;
+    background: #ffffff0d;
+    border: 1px solid var(--line);
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: #d6cff5;
+    white-space: nowrap;
+  }
+  td:first-child { white-space: nowrap; }
+
+  .notes { display: grid; gap: 10px; }
+  .note {
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #ffffff04;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .note b { color: var(--ink); font-weight: 550; font-size: 13px; }
+  .note--warn { border-color: hsl(38 90% 60% / .28); background: hsl(38 90% 60% / .06); }
+
+  /* footer */
+  footer {
+    margin-top: clamp(56px, 8vw, 96px);
+    border-top: 1px solid var(--line);
+    padding: 26px 0 40px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    color: var(--faint);
+    font-size: 12.5px;
+  }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--ink); }
+  footer .foot-links { display: flex; gap: 16px; }
+
+  /* reveal */
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { animation: rise .7s cubic-bezier(.2,.7,.2,1) both; }
+    .reveal:nth-child(2) { animation-delay: .06s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; text-align: left; }
+    .hero__stage { order: -1; min-height: 300px; }
+    .two-col { grid-template-columns: 1fr; }
+    .brand__tag { display: none; }
+  }
+  @media (max-width: 560px) {
+    .wrap { width: calc(100% - 32px); }
+    .masthead__links a:first-child { display: none; }
+    .lab { gap: 12px 16px; }
+    input[type="range"] { width: 92px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#gallery">Skip to the orbs</a>
+
+<header class="wrap masthead">
+  <a class="brand" href="./index.html" aria-label="Orbs home">
+    <span class="brand__mark" aria-hidden="true"></span>
+    <span class="brand__name">Orbs</span>
+    <span class="brand__tag">for assistants</span>
+  </a>
+  <nav class="masthead__links" aria-label="Primary">
+    <a href="#gallery">Orbs</a>
+    <a href="#usage">Usage</a>
+    <a href="https://github.com/sudarshandev-llm/Orbs">GitHub</a>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <!-- ================= hero ================= -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="reveal">
+      <p class="eyebrow"><span class="eyebrow__dot"></span> 5 orbs · 0 dependencies · 4 states</p>
+      <h1 id="hero-title">Orbs that look lit,<br>not drawn.</h1>
+      <p class="lede">
+        A small set of <strong>photoreal CSS orbs</strong> for AI assistants. Each one is built from a
+        single key light, a bounce light and a fresnel rim &mdash; the three things that separate glass
+        from a gradient circle. Drop one in, switch its state, ship it.
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#gallery">Browse the orbs</a>
+        <a class="btn" href="#usage">How to embed</a>
+      </div>
+
+      <div style="margin-top:26px; max-width:520px;">
+        <div class="code">
+          <div class="code__bar">
+            <span class="code__name">index.html</span>
+            <button class="copy" type="button" data-copy-text="&lt;script src=&quot;orb.js&quot;&gt;&lt;/script&gt;
+&lt;assistant-orb variant=&quot;sphere&quot; state=&quot;listening&quot; size=&quot;168&quot;&gt;&lt;/assistant-orb&gt;">Copy</button>
+          </div>
+<pre><span class="c">&lt;!-- one script, then as many orbs as you like --&gt;</span>
+<span class="t">&lt;script</span> <span class="a">src</span>=<span class="s">"orb.js"</span><span class="t">&gt;&lt;/script&gt;</span>
+
+<span class="t">&lt;assistant-orb</span>
+  <span class="a">variant</span>=<span class="s">"sphere"</span>
+  <span class="a">state</span>=<span class="s">"listening"</span>
+  <span class="a">size</span>=<span class="s">"168"</span><span class="t">&gt;&lt;/assistant-orb&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__stage">
+      <assistant-orb variant="sphere" state="idle" size="272" hue="265" label="Glass sphere orb"></assistant-orb>
+      <div class="hero__caption"><b>orb-3d-sphere</b> · idle · 272px</div>
+    </div>
+  </section>
+
+  <!-- ================= gallery ================= -->
+  <section id="gallery" aria-labelledby="gallery-title">
+    <div class="gallery-head">
+      <div>
+        <h2 id="gallery-title">The collection</h2>
+        <p>Every orb below is the real thing, running live in this page.</p>
+      </div>
+      <p class="lab__meta">Try the states &mdash; motion is what sells the material.</p>
+    </div>
+
+    <div class="lab" role="group" aria-label="Orb playground">
+      <div class="lab__group">
+        <span class="lab__label" id="state-label">State</span>
+        <div class="seg" role="group" aria-labelledby="state-label">
+          <button type="button" data-state="idle" aria-pressed="true">idle</button>
+          <button type="button" data-state="listening" aria-pressed="false">listening</button>
+          <button type="button" data-state="thinking" aria-pressed="false">thinking</button>
+          <button type="button" data-state="speaking" aria-pressed="false">speaking</button>
+        </div>
+      </div>
+
+      <div class="lab__group">
+        <label class="lab__label" for="size">Size</label>
+        <input id="size" type="range" min="96" max="260" step="4" value="152">
+        <output class="readout" for="size" id="size-out">152px</output>
+      </div>
+
+      <div class="lab__group">
+        <label class="lab__label" for="speed">Speed</label>
+        <input id="speed" type="range" min="0.3" max="2" step="0.1" value="1">
+        <output class="readout" for="speed" id="speed-out">1.0&times;</output>
+      </div>
+
+      <div class="lab__spacer"></div>
+
+      <label class="switch">
+        <input id="pause" type="checkbox">
+        <span class="switch__track" aria-hidden="true"></span>
+        Freeze motion
+      </label>
+    </div>
+
+    <div class="grid" id="grid">
+
+      <article class="card reveal" style="--card-hue:265">
+        <div class="card__stage">
+          <assistant-orb variant="sphere" state="idle" size="152" hue="265" label="Polished glass sphere"></assistant-orb>
+        </div>
+        <div class="card__body">
+          <div class="card__title"><h3>Glass Sphere</h3><span class="card__id">orb-3d-sphere</span></div>
+          <p class="card__desc">The reference orb. Two lights, a horizon reflection inside the glass and a caustic under the core.</p>
+          <div class="chips"><span class="chip">glass</span><span class="chip">specular</span><span class="chip">caustic</span></div>
+          <div class="card__actions">
+            <button class="btn copy" type="button" data-copy-orb>Copy embed</button>
+            <a class="btn" href="orbs/orb-3d-sphere.html">Open demo</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--card-hue:196">
+        <div class="card__stage">
+          <assistant-orb variant="gyro" state="idle" size="152" hue="196" label="Orbiting gyroscope rings"></assistant-orb>
+        </div>
+        <div class="card__body">
+          <div class="card__title"><h3>Neon Gyro</h3><span class="card__id">orb-3d-gyro</span></div>
+          <p class="card__desc">Three rings rotating in real 3D, split into a dimmed back rig and a bright front rig so the core can occlude them.</p>
+          <div class="chips"><span class="chip">3d</span><span class="chip">torus</span><span class="chip">orbit</span></div>
+          <div class="card__actions">
+            <button class="btn copy" type="button" data-copy-orb>Copy embed</button>
+            <a class="btn" href="orbs/orb-3d-gyro.html">Open demo</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--card-hue:168">
+        <div class="card__stage">
+          <assistant-orb variant="globe" state="idle" size="152" hue="168" label="Wireframe globe"></assistant-orb>
+        </div>
+        <div class="card__body">
+          <div class="card__title"><h3>Wire Globe</h3><span class="card__id">orb-3d-globe</span></div>
+          <p class="card__desc">Real meridians and latitudes positioned in 3D, wrapped in atmosphere and a little volumetric haze.</p>
+          <div class="chips"><span class="chip">wireframe</span><span class="chip">atmosphere</span></div>
+          <div class="card__actions">
+            <button class="btn copy" type="button" data-copy-orb>Copy embed</button>
+            <a class="btn" href="orbs/orb-3d-globe.html">Open demo</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--card-hue:302">
+        <div class="card__stage">
+          <assistant-orb variant="grain" state="idle" size="152" hue="302" label="Matte grain orb"></assistant-orb>
+        </div>
+        <div class="card__body">
+          <div class="card__title"><h3>Grain</h3><span class="card__id">orb-grain</span></div>
+          <p class="card__desc">Sandblasted. The specular goes wide and soft, and two grain layers run at different speeds so it never looks tiled.</p>
+          <div class="chips"><span class="chip">matte</span><span class="chip">grain</span><span class="chip">frosted</span></div>
+          <div class="card__actions">
+            <button class="btn copy" type="button" data-copy-orb>Copy embed</button>
+            <a class="btn" href="orbs/orb-grain.html">Open demo</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--card-hue:222">
+        <div class="card__stage">
+          <assistant-orb variant="grain-glow" state="idle" size="152" hue="222" label="Grain glow cloud"></assistant-orb>
+        </div>
+        <div class="card__body">
+          <div class="card__title"><h3>Grain Glow</h3><span class="card__id">orb-grain-glow</span></div>
+          <p class="card__desc">No surface at all &mdash; two plasma blobs, dust grain and a wide halo. The one to use when the assistant is only a voice.</p>
+          <div class="chips"><span class="chip">plasma</span><span class="chip">halo</span><span class="chip">dust</span></div>
+          <div class="card__actions">
+            <button class="btn copy" type="button" data-copy-orb>Copy embed</button>
+            <a class="btn" href="orbs/orb-grain-glow.html">Open demo</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+  <!-- ================= usage ================= -->
+  <section id="usage" aria-labelledby="usage-title">
+    <div class="section-head">
+      <h2 id="usage-title">Usage</h2>
+      <p>One file, one element. No framework, no build step, no network requests.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="stack">
+        <div class="code">
+          <div class="code__bar">
+            <span class="code__name">app.js</span>
+            <button class="copy" type="button" data-copy-text="const orb = document.querySelector('assistant-orb');
+
+orb.addEventListener('orbstatechange', (e) =&gt; {
+  console.log(e.detail.previous, '&rarr;', e.detail.state);
+});
+
+// drive it from your assistant
+orb.setState('thinking');
+orb.setState('speaking');">Copy</button>
+          </div>
+<pre><span class="c">// state is just an attribute</span>
+<span class="t">const</span> orb = document.querySelector(<span class="s">'assistant-orb'</span>);
+
+orb.addEventListener(<span class="s">'orbstatechange'</span>, (e) =&gt; {
+  console.log(e.detail.previous, <span class="s">'&rarr;'</span>, e.detail.state);
+});
+
+<span class="c">// drive it from your assistant</span>
+orb.setState(<span class="s">'thinking'</span>);
+orb.setState(<span class="s">'speaking'</span>);</pre>
+        </div>
+
+        <div class="code">
+          <div class="code__bar">
+            <span class="code__name">CSS only (no JS)</span>
+            <button class="copy" type="button" data-copy-text="&lt;div class=&quot;orb-stage&quot; data-state=&quot;thinking&quot; style=&quot;--orb-h:265;--orb-size:168px&quot;&gt;
+  &lt;!-- paste the markup from orbs/orb-3d-sphere.html --&gt;
+&lt;/div&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;orb.css&quot;&gt;">Copy</button>
+          </div>
+<pre><span class="c">&lt;!-- every /orbs/*.html file is self-contained, or use the stylesheet --&gt;</span>
+<span class="t">&lt;link</span> <span class="a">rel</span>=<span class="s">"stylesheet"</span> <span class="a">href</span>=<span class="s">"orb.css"</span><span class="t">&gt;</span>
+
+<span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"orb-stage"</span> <span class="a">data-state</span>=<span class="s">"thinking"</span>
+     <span class="a">style</span>=<span class="s">"--orb-h:265;--orb-size:168px"</span><span class="t">&gt;</span>
+  <span class="c">&lt;!-- markup from orbs/orb-3d-sphere.html --&gt;</span>
+<span class="t">&lt;/div&gt;</span></pre>
+        </div>
+
+        <div class="notes">
+          <div class="note">
+            <b>States retime everything</b>
+            <span><code>idle</code> breathes slowly, <code>listening</code> pulses, <code>thinking</code> spins the internal current up, and <code>speaking</code> pops the surface on an uneven rhythm because speech is not a sine wave.</span>
+          </div>
+          <div class="note">
+            <b>Accessible out of the box</b>
+            <span>The stage is a labelled <code>role="img"</code> that announces its state. Set <code>decorative</code> if the orb is pure garnish. All animation is disabled under <code>prefers-reduced-motion</code>.</span>
+          </div>
+          <div class="note note--warn">
+            <b>Designed for dark surfaces</b>
+            <span>These are lit objects: they need a dark room to glow in. On a light background, put them on a dark panel or reduce <code>--orb-speed</code> and accept a different look.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only" style="position:absolute;left:-9999px">Element attributes</caption>
+            <thead>
+              <tr><th scope="col">Attribute</th><th scope="col">Default</th><th scope="col">Values</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>variant</code></td><td><code>sphere</code></td><td>sphere · gyro · globe · grain · grain-glow</td></tr>
+              <tr><td><code>state</code></td><td><code>idle</code></td><td>idle · listening · thinking · speaking</td></tr>
+              <tr><td><code>size</code></td><td><code>168</code></td><td>24 – 900 (px)</td></tr>
+              <tr><td><code>hue</code></td><td><code>265</code></td><td>0 – 360</td></tr>
+              <tr><td><code>speed</code></td><td><code>1</code></td><td>0.1 – 3</td></tr>
+              <tr><td><code>label</code></td><td>Assistant orb</td><td>accessible name</td></tr>
+              <tr><td><code>paused</code></td><td>—</td><td>freeze all animation</td></tr>
+              <tr><td><code>decorative</code></td><td>—</td><td>hide from assistive tech</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Custom property</th><th scope="col">Used for</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>--orb-h</code></td><td>base hue; every other colour is derived with <code>calc()</code></td></tr>
+              <tr><td><code>--orb-size</code></td><td>diameter; all lighting geometry scales with it</td></tr>
+              <tr><td><code>--orb-speed</code></td><td>global time multiplier</td></tr>
+              <tr><td><code>--glow</code></td><td>bloom strength, set per state</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note">
+          <b>Zero build for consumers</b>
+          <span><code>orb.js</code> is a classic script, not a module, so it also works from <code>file://</code>. It has no imports and makes no requests &mdash; the CSS is inlined at build time.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= theming ================= -->
+  <section id="theme" aria-labelledby="theme-title">
+    <div class="section-head">
+      <h2 id="theme-title">One hue, whole material</h2>
+      <p>The base colour is a single number. Shadows, bounce light, rim and bloom are all derived from it, so the light stays physically consistent.</p>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="swatches" role="group" aria-label="Hue presets">
+          <button class="swatch" type="button" data-sw="265" aria-pressed="true" style="--sw:265" aria-label="Violet, hue 265"></button>
+          <button class="swatch" type="button" data-sw="222" aria-pressed="false" style="--sw:222" aria-label="Indigo, hue 222"></button>
+          <button class="swatch" type="button" data-sw="196" aria-pressed="false" style="--sw:196" aria-label="Cyan, hue 196"></button>
+          <button class="swatch" type="button" data-sw="168" aria-pressed="false" style="--sw:168" aria-label="Mint, hue 168"></button>
+          <button class="swatch" type="button" data-sw="140" aria-pressed="false" style="--sw:140" aria-label="Emerald, hue 140"></button>
+          <button class="swatch" type="button" data-sw="38" aria-pressed="false" style="--sw:38" aria-label="Amber, hue 38"></button>
+          <button class="swatch" type="button" data-sw="350" aria-pressed="false" style="--sw:350" aria-label="Rose, hue 350"></button>
+          <button class="swatch" type="button" data-sw="0" aria-pressed="false" style="--sw:0" aria-label="Crimson, hue 0"></button>
+        </div>
+
+        <div class="code">
+          <div class="code__bar">
+            <span class="code__name">theming</span>
+            <button class="copy" type="button" id="theme-copy">Copy</button>
+          </div>
+          <pre id="theme-code">&lt;assistant-orb variant="sphere" hue="265" size="200"&gt;&lt;/assistant-orb&gt;</pre>
+        </div>
+      </div>
+
+      <div class="theme-demo">
+        <assistant-orb id="theme-orb" variant="sphere" state="idle" size="200" hue="265" label="Theme preview orb"></assistant-orb>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= craft ================= -->
+  <section id="craft" aria-labelledby="craft-title">
+    <div class="section-head">
+      <h2 id="craft-title">What actually makes them read as real</h2>
+      <p>No images, no canvas, no shaders. Just the cues your eye expects from a lit object.</p>
+    </div>
+
+    <div class="grid">
+      <div class="note">
+        <b>One key light, everywhere</b>
+        <span>Every gradient, shadow and highlight is anchored to a light at 33% / 24%. Break that and the orb instantly looks painted.</span>
+      </div>
+      <div class="note">
+        <b>Fresnel, not a border</b>
+        <span>The rim only appears at grazing angles. It is a screen-blended radial ring, never a stroked edge.</span>
+      </div>
+      <div class="note">
+        <b>Bounce and contact</b>
+        <span>A cool bounce lights the lower right of the sphere, and a separate soft shadow stays on the floor while the orb floats above it.</span>
+      </div>
+      <div class="note">
+        <b>Grain that moves</b>
+        <span>Static noise reads as a texture; noise that re-rolls 24 times a second reads as film. Two layers at different speeds kill the tiling.</span>
+      </div>
+      <div class="note">
+        <b>Depth rigs</b>
+        <span>The gyro is drawn twice &mdash; a dimmed, blurred rig behind the core and a sharp one in front &mdash; so rings genuinely pass behind it.</span>
+      </div>
+      <div class="note">
+        <b>Real 3D, not fake ellipses</b>
+        <span>Meridians are circles rotated on the Y axis inside a <code>preserve-3d</code> rig. The projection is done by the browser, so it is always correct.</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <span>MIT licensed · CSS only · no fonts, trackers or requests</span>
+  <div class="foot-links">
+    <a href="https://github.com/sudarshandev-llm/Orbs">GitHub</a>
+    <a href="#gallery">Orbs</a>
+    <a href="#usage">Usage</a>
+  </div>
+</footer>
+
+<script src="./orb.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var gridOrbs = Array.prototype.slice.call(document.querySelectorAll("#grid assistant-orb"));
+
+  /* ---------------------------------------------------------- clipboard */
+  function legacyCopy(text) {
+    var area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.top = "-1000px";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    try { document.execCommand("copy"); } catch (err) { /* noop */ }
+    document.body.removeChild(area);
+  }
+
+  function flash(button, label) {
+    if (!button) return;
+    if (button.dataset.label === undefined) button.dataset.label = button.textContent;
+    button.textContent = label || "Copied";
+    button.classList.add("is-done");
+    window.setTimeout(function () {
+      button.textContent = button.dataset.label;
+      button.classList.remove("is-done");
+    }, 1500);
+  }
+
+  function copyText(text, button) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(
+        function () { flash(button); },
+        function () { legacyCopy(text); flash(button); }
+      );
+    } else {
+      legacyCopy(text);
+      flash(button);
+    }
+  }
+
+  /* ------------------------------------------------------------- states */
+  var stateButtons = Array.prototype.slice.call(document.querySelectorAll("[data-state]"));
+  var currentState = "idle";
+
+  function applyState(state) {
+    currentState = state;
+    gridOrbs.forEach(function (orb) {
+      orb.setAttribute("state", state);
+    });
+    stateButtons.forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.dataset.state === state));
+    });
+  }
+
+  stateButtons.forEach(function (button) {
+    button.addEventListener("click", function () { applyState(button.dataset.state); });
+  });
+
+  /* -------------------------------------------------------- size / speed */
+  var size = document.getElementById("size");
+  var sizeOut = document.getElementById("size-out");
+  var speed = document.getElementById("speed");
+  var speedOut = document.getElementById("speed-out");
+  var pause = document.getElementById("pause");
+
+  function applySize() {
+    var value = Number(size.value);
+    sizeOut.textContent = value + "px";
+    gridOrbs.forEach(function (orb) { orb.setAttribute("size", String(value)); });
+  }
+
+  function applySpeed() {
+    var value = Number(speed.value);
+    speedOut.textContent = value.toFixed(1) + "\u00d7";
+    gridOrbs.forEach(function (orb) { orb.setAttribute("speed", String(value)); });
+  }
+
+  function applyPause() {
+    gridOrbs.forEach(function (orb) {
+      if (pause.checked) orb.setAttribute("paused", "");
+      else orb.removeAttribute("paused");
+    });
+  }
+
+  if (size) size.addEventListener("input", applySize);
+  if (speed) speed.addEventListener("input", applySpeed);
+  if (pause) pause.addEventListener("change", applyPause);
+
+  /* ------------------------------------------------------------- copying */
+  Array.prototype.slice.call(document.querySelectorAll("[data-copy-text]")).forEach(function (button) {
+    button.addEventListener("click", function () {
+      copyText(button.dataset.copyText, button);
+    });
+  });
+
+  Array.prototype.slice.call(document.querySelectorAll("[data-copy-orb]")).forEach(function (button) {
+    button.addEventListener("click", function () {
+      var card = button.closest(".card");
+      var orb = card && card.querySelector("assistant-orb");
+      if (!orb) return;
+      var snippet =
+        '<assistant-orb variant="' + orb.getAttribute("variant") +
+        '" state="' + currentState +
+        '" size="' + orb.getAttribute("size") +
+        '" hue="' + orb.getAttribute("hue") + '"></assistant-orb>';
+      copyText(snippet, button);
+    });
+  });
+
+  /* ------------------------------------------------------------ theming */
+  var themeOrb = document.getElementById("theme-orb");
+  var themeCode = document.getElementById("theme-code");
+  var themeCopy = document.getElementById("theme-copy");
+  var swatches = Array.prototype.slice.call(document.querySelectorAll("[data-sw]"));
+
+  function applyHue(hue) {
+    document.documentElement.style.setProperty("--hue", hue);
+    if (themeOrb) themeOrb.setAttribute("hue", hue);
+    if (themeCode) {
+      themeCode.textContent = '<assistant-orb variant="sphere" hue="' + hue + '" size="200"></assistant-orb>';
+    }
+    swatches.forEach(function (swatch) {
+      swatch.setAttribute("aria-pressed", String(swatch.dataset.sw === String(hue)));
+    });
+  }
+
+  swatches.forEach(function (swatch) {
+    swatch.addEventListener("click", function () { applyHue(swatch.dataset.sw); });
+  });
+
+  if (themeCopy) {
+    themeCopy.addEventListener("click", function () {
+      copyText(themeCode.textContent, themeCopy);
+    });
+  }
+
+  /* ------------------------------------------------------------- initial */
+  applySize();
+  applySpeed();
+  applyState("idle");
+
+  if (reduceMotion && pause) {
+    pause.checked = true;
+    applyPause();
+  }
+
+  // Keep the hero in sync with the page accent on first paint.
+  applyHue("265");
+})();
+</script>
+
+</main>
+
+</body>
+</html>

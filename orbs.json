@@ -1,0 +1,62 @@
+{
+  "name": "orbs",
+  "version": "1.0.0",
+  "description": "Photoreal CSS orbs for AI assistants.",
+  "component": "orb.js",
+  "componentTag": "assistant-orb",
+  "stylesheet": "orb.css",
+  "states": ["idle", "listening", "thinking", "speaking"],
+  "defaults": {
+    "state": "idle",
+    "size": 168,
+    "hue": 265,
+    "speed": 1
+  },
+  "orbs": [
+    {
+      "id": "orb-3d-sphere",
+      "variant": "sphere",
+      "name": "Glass Sphere",
+      "hue": 265,
+      "material": "glass",
+      "file": "orbs/orb-3d-sphere.html",
+      "tags": ["glass", "specular", "caustic", "grain"]
+    },
+    {
+      "id": "orb-3d-gyro",
+      "variant": "gyro",
+      "name": "Neon Gyro",
+      "hue": 196,
+      "material": "metal",
+      "file": "orbs/orb-3d-gyro.html",
+      "tags": ["3d", "torus", "orbit", "neon"]
+    },
+    {
+      "id": "orb-3d-globe",
+      "variant": "globe",
+      "name": "Wire Globe",
+      "hue": 168,
+      "material": "wireframe",
+      "file": "orbs/orb-3d-globe.html",
+      "tags": ["wireframe", "3d", "atmosphere", "haze"]
+    },
+    {
+      "id": "orb-grain",
+      "variant": "grain",
+      "name": "Grain",
+      "hue": 302,
+      "material": "matte",
+      "file": "orbs/orb-grain.html",
+      "tags": ["matte", "frosted", "grain"]
+    },
+    {
+      "id": "orb-grain-glow",
+      "variant": "grain-glow",
+      "name": "Grain Glow",
+      "hue": 222,
+      "material": "plasma",
+      "file": "orbs/orb-grain-glow.html",
+      "tags": ["plasma", "halo", "dust", "soft"]
+    }
+  ]
+}

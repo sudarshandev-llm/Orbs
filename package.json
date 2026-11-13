@@ -1,0 +1,39 @@
+{
+  "name": "orbs",
+  "version": "1.0.0",
+  "description": "Photoreal, zero-dependency CSS orbs for AI assistants. Five materials, four states, one attribute to switch.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Sudarshan",
+  "homepage": "https://github.com/sudarshandev-llm/Orbs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sudarshandev-llm/Orbs.git"
+  },
+  "keywords": [
+    "orb",
+    "ai",
+    "assistant",
+    "voice",
+    "css",
+    "web-components",
+    "animation",
+    "glassmorphism"
+  ],
+  "files": [
+    "orb.css",
+    "orb.js",
+    "orbs",
+    "orbs.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
